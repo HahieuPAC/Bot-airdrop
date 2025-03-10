@@ -74,7 +74,7 @@ class Program
   
                 // Bắt đầu vòng lặp hội thoại
                 int conversationCount = 0;
-                const int MAX_CONVERSATIONS = 3;
+                const int MAX_CONVERSATIONS = 21;
   
                 while (conversationCount < MAX_CONVERSATIONS)
                 {
@@ -430,6 +430,12 @@ class Program
                 }
   
                 Console.WriteLine($"\n✨ Đã hoàn thành {conversationCount} lượt hội thoại!");
+
+                // Thêm đoạn code để tự động đóng chương trình
+                Console.WriteLine("🔄 Đang chuẩn bị đóng chương trình...");
+                isRunning = false;
+                CleanupAndExit();
+                Environment.Exit(0);
             }
             catch (Exception ex)
             {
