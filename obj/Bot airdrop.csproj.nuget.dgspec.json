@@ -1,30 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj": {}
+    "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj": {}
   },
   "projects": {
-    "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj": {
+    "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj",
+        "projectUniqueName": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
         "projectName": "Bot airdrop",
-        "projectPath": "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj",
-        "packagesPath": "C:\\Users\\Hieu\\.nuget\\packages\\",
-        "outputPath": "D:\\VS code\\C#\\Bot airdrop\\obj\\",
+        "projectPath": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
+        "packagesPath": "C:\\Users\\lovev\\.nuget\\packages\\",
+        "outputPath": "D:\\VS code\\C#\\Bot-airdrop\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Hieu\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\lovev\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -37,12 +37,11 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.200"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.Edge.SeleniumTools": {
               "target": "Package",
@@ -73,7 +72,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

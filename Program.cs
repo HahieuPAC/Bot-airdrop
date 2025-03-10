@@ -17,13 +17,13 @@ class Program
     static readonly string METAMASK_PASSWORD = "H@trunghj3up@c112358";
     
     // Thêm hằng số cho đường dẫn profile
-    static readonly string EDGE_USER_DATA_DIR = Path.Combine(
-        Environment.GetEnvironmentVariable("USERPROFILE"),
-        @"AppData\Local\Microsoft\Edge\User Data"
+    static readonly string BASE_EDGE_USER_DATA_DIR = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        @"Microsoft\Edge\User Data"
     );
     static readonly string CHATGPT_USER_DATA_DIR = Path.Combine(
-        Environment.GetEnvironmentVariable("USERPROFILE"),
-        @"AppData\Local\Microsoft\Edge\User Data ChatGPT"
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        @"Microsoft\Edge\User Data ChatGPT"
     );
 
     static void Main()
@@ -64,7 +64,183 @@ class Program
             {
                 chatGptDriver = new EdgeDriver(chatGptOptions);
                 chatGptDriver.Navigate().GoToUrl(CHATGPT_URL);
-                Console.WriteLine("✅ Đã mở ChatGPT");
+                Console.WriteLine("✅ Đã mở ChatGPT thành công!");
+  
+                Console.WriteLine("⌛ Đợi ChatGPT khởi động...");
+                Thread.Sleep(5000); // Đợi 5 giây cho ChatGPT khởi động hoàn toàn
+  
+                // Tạo WebDriverWait để đợi các phần tử
+                var wait = new WebDriverWait(chatGptDriver, TimeSpan.FromSeconds(10));
+  
+                // Bắt đầu vòng lặp hội thoại
+                int conversationCount = 0;
+                const int MAX_CONVERSATIONS = 20;
+  
+                while (conversationCount < MAX_CONVERSATIONS)
+                {
+                    conversationCount++;
+                    Console.WriteLine($"\n🔄 Lượt hội thoại thứ {conversationCount}/{MAX_CONVERSATIONS}");
+  
+                    try
+                    {
+                        // Đợi và lấy câu trả lời từ ChatGPT
+                        var lastResponse = wait.Until(driver => 
+                            driver.FindElement(By.XPath("(//div[contains(@class, \"markdown\")])[last()]")));
+  
+                        if (lastResponse != null)
+                        {
+                            Console.WriteLine("\n🤖 ChatGPT trả lời:");
+                            Console.WriteLine("------------------------------------------");
+                            Console.WriteLine(lastResponse.Text);
+                            Console.WriteLine("------------------------------------------\n");
+  
+                            // Chuyển sang cửa sổ Kite và gửi tin nhắn
+                            Console.WriteLine("🌐 Đang gửi câu trả lời sang Kite...");
+                            try
+                            {
+                                // Tìm ô input trên Kite
+                                var kiteWait = new WebDriverWait(kiteDriver, TimeSpan.FromSeconds(10));
+                                var kiteInput = kiteWait.Until(driver => 
+                                    driver.FindElement(By.XPath("/html/body/div/div[2]/main/div/div[2]/div[3]/form/input")));
+                                
+                                // Clear ô input và nhập nội dung mới
+                                kiteInput.Clear();
+                                kiteInput.SendKeys(lastResponse.Text);
+                                
+                                // Gửi tin nhắn bằng phím Enter
+                                kiteInput.SendKeys(Keys.Enter);
+                                
+                                Console.WriteLine("✅ Đã gửi tin nhắn đến Kite!");
+                                
+                                // Đợi và lấy câu trả lời từ Kite
+                                Console.WriteLine("⌛ Đang đợi Kite trả lời...");
+                                Console.WriteLine("🔍 Đang tìm phần tử chứa câu trả lời của Kite...");
+                                Thread.Sleep(7000); // Đợi 7 giây cho Kite xử lý và hiển thị câu trả lời
+  
+                                try
+                                {
+                                    // Lưu xpath để dễ debug
+                                    string kiteResponseXPath = "/html/body/div/div[2]/main/div/div[2]/div[1]/div[2]/div/div";
+                                    Console.WriteLine($"🔍 Tìm câu trả lời với XPath: {kiteResponseXPath}");
+  
+                                    // Lấy tất cả các phần tử text trong container
+                                    var kiteResponse = kiteWait.Until(driver => 
+                                        driver.FindElement(By.XPath(kiteResponseXPath)));
+  
+                                    if (kiteResponse != null)
+                                    {
+                                        Console.WriteLine("✅ Đã tìm thấy phần tử chứa câu trả lời của Kite!");
+                                        
+                                        // Lấy tất cả text trong container
+                                        string responseText = kiteResponse.Text;
+                                        
+                                        // Hiển thị độ dài của câu trả lời để debug
+                                        Console.WriteLine($"📏 Độ dài câu trả lời: {responseText.Length} ký tự");
+  
+                                        if (string.IsNullOrEmpty(responseText))
+                                        {
+                                            Console.WriteLine("⚠️ Tìm thấy phần tử nhưng không có nội dung!");
+                                            Thread.Sleep(2000); // Đợi thêm 2 giây và thử lại
+                                            continue;
+                                        }
+  
+                                        Console.WriteLine("\n🤖 Kite trả lời:");
+                                        Console.WriteLine("------------------------------------------");
+                                        Console.WriteLine(responseText);
+                                        Console.WriteLine("------------------------------------------\n");
+  
+                                        // Đợi thêm 1 giây sau khi lấy được câu trả lời
+                                        Thread.Sleep(1000);
+  
+                                        // Gửi câu trả lời của Kite sang ChatGPT
+                                        Console.WriteLine("📤 Đang gửi câu trả lời sang ChatGPT...");
+                                        Console.WriteLine("🔍 Đang tìm ô nhập text của ChatGPT...");
+  
+                                        try 
+                                        {
+                                            // Tìm textarea bằng XPath
+                                            Console.WriteLine("🔍 Tìm textarea với XPath");
+                                            var inputBox = wait.Until(driver => 
+                                                driver.FindElement(By.XPath("//textarea[@id='prompt-textarea']")));
+  
+                                            if (inputBox == null)
+                                            {
+                                                throw new NoSuchElementException("Không tìm thấy ô nhập text của ChatGPT");
+                                            }
+  
+                                            Console.WriteLine("✅ Đã tìm thấy textarea!");
+  
+                                            // Nhập text trực tiếp
+                                            Console.WriteLine("📝 Nhập text...");
+                                            inputBox.Clear();
+                                            inputBox.SendKeys(responseText + Keys.Enter);
+  
+                                            Console.WriteLine("✅ Đã gửi tin nhắn!");
+  
+                                            Thread.Sleep(8000); // Tăng thời gian đợi ChatGPT xử lý
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine($"❌ Lỗi khi gửi tin nhắn đến ChatGPT:");
+                                            Console.WriteLine($"⚠️ Chi tiết lỗi: {ex.Message}");
+                                            Console.WriteLine($"⚠️ Loại lỗi: {ex.GetType().Name}");
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("⚠️ Không tìm thấy nội dung trong phần tử trả lời của Kite");
+                                        continue;
+                                    }
+                                }
+                                catch (NoSuchElementException)
+                                {
+                                    Console.WriteLine("❌ Không tìm thấy phần tử chứa câu trả lời của Kite trên trang");
+                                    Console.WriteLine("⚠️ Có thể XPath không chính xác hoặc cấu trúc trang đã thay đổi");
+                                    break;
+                                }
+                                catch (WebDriverTimeoutException)
+                                {
+                                    Console.WriteLine("❌ Đã hết thời gian chờ khi tìm câu trả lời của Kite");
+                                    Console.WriteLine("⚠️ Có thể Kite đang xử lý chậm hoặc không phản hồi");
+                                    break;
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"❌ Lỗi không xác định khi xử lý câu trả lời của Kite:");
+                                    Console.WriteLine($"⚠️ Chi tiết lỗi: {ex.Message}");
+                                    Console.WriteLine($"⚠️ Loại lỗi: {ex.GetType().Name}");
+                                    break;
+                                }
+                            }
+                            catch (NoSuchElementException)
+                            {
+                                Console.WriteLine("❌ Không tìm thấy ô nhập tin nhắn trên Kite");
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"⚠️ Lỗi khi gửi tin nhắn: {ex.Message}");
+                                break;
+                            }
+                        }
+                    }
+                    catch (NoSuchElementException)
+                    {
+                        Console.WriteLine("❌ Không tìm thấy câu trả lời nào của ChatGPT");
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"⚠️ Lỗi khi tìm câu trả lời: {ex.Message}");
+                        break;
+                    }
+  
+                    // Đợi một chút trước khi bắt đầu vòng lặp mới
+                    Thread.Sleep(2000);
+                }
+  
+                Console.WriteLine($"\n✨ Đã hoàn thành {conversationCount} lượt hội thoại!");
             }
             catch (Exception ex)
             {
@@ -104,7 +280,7 @@ class Program
         if (isKite)
         {
             // Kite sử dụng thư mục User Data gốc
-            options.AddArgument($"--user-data-dir={EDGE_USER_DATA_DIR}");
+            options.AddArgument($"--user-data-dir={BASE_EDGE_USER_DATA_DIR}");
             options.AddArgument("--profile-directory=Profile 1");
         }
         else
@@ -141,7 +317,7 @@ class Program
                 var defaultFiles = new[] { "Preferences", "Secure Preferences", "Local State" };
                 foreach (var file in defaultFiles)
                 {
-                    var sourcePath = Path.Combine(EDGE_USER_DATA_DIR, file);
+                    var sourcePath = Path.Combine(BASE_EDGE_USER_DATA_DIR, file);
                     var destPath = Path.Combine(CHATGPT_USER_DATA_DIR, file);
                     if (File.Exists(sourcePath) && !File.Exists(destPath))
                     {
@@ -303,5 +479,42 @@ class Program
 
         KillAllEdgeProcesses();
         Console.WriteLine("✅ Đã đóng tất cả trình duyệt.");
+    }
+
+    static IWebDriver? StartEdgeWithProfile(string profileName, string userDataDir)
+    {
+        try
+        {
+            KillAllEdgeProcesses();
+            Thread.Sleep(2000);
+
+            Console.WriteLine($"📁 Sử dụng profile {profileName} từ {userDataDir}");
+
+            var options = new EdgeOptions();
+            options.AddArgument($"--user-data-dir={userDataDir}");
+            options.AddArgument($"--profile-directory={profileName}");
+            
+            // In ra đường dẫn thực tế được sử dụng
+            Console.WriteLine($"🔍 Sử dụng user data dir: {userDataDir}");
+            Console.WriteLine($"🔍 Sử dụng profile: {profileName}");
+
+            options.AddArgument("--start-maximized");
+            options.AddArgument("--no-first-run");
+            options.AddArgument("--no-default-browser-check");
+            options.AddArgument("--password-store=basic");
+            options.AddArgument("--disable-popup-blocking");
+            options.AddArgument("--disable-blink-features=AutomationControlled");
+            options.AddExcludedArgument("enable-automation");
+            options.AddAdditionalOption("useAutomationExtension", false);
+            
+            var driver = new EdgeDriver(options);
+
+            return driver;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Lỗi khi mở {profileName}: {ex.Message}");
+            return null;
+        }
     }
 }

@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net9.0": {
+    "net8.0": {
       "Microsoft.Edge.SeleniumTools/3.141.3": {
         "type": "package",
         "dependencies": {
@@ -102,36 +102,36 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net9.0": [
+    "net8.0": [
       "Microsoft.Edge.SeleniumTools >= 3.141.3",
       "Selenium.Support >= 4.29.0",
       "Selenium.WebDriver >= 4.29.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Hieu\\.nuget\\packages\\": {}
+    "C:\\Users\\lovev\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj",
+      "projectUniqueName": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
       "projectName": "Bot airdrop",
-      "projectPath": "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj",
-      "packagesPath": "C:\\Users\\Hieu\\.nuget\\packages\\",
-      "outputPath": "D:\\VS code\\C#\\Bot airdrop\\obj\\",
+      "projectPath": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
+      "packagesPath": "C:\\Users\\lovev\\.nuget\\packages\\",
+      "outputPath": "D:\\VS code\\C#\\Bot-airdrop\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Hieu\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\lovev\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net9.0"
+        "net8.0"
       ],
       "sources": {
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "projectReferences": {}
         }
       },
@@ -144,12 +144,11 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.200"
+      }
     },
     "frameworks": {
-      "net9.0": {
-        "targetAlias": "net9.0",
+      "net8.0": {
+        "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.Edge.SeleniumTools": {
             "target": "Package",
@@ -180,7 +179,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -192,7 +191,7 @@
       "message": "Detected package version outside of dependency constraint: Microsoft.Edge.SeleniumTools 3.141.3 requires Selenium.WebDriver (= 3.141.0) but version Selenium.WebDriver 4.29.0 was resolved.",
       "libraryId": "Selenium.WebDriver",
       "targetGraphs": [
-        "net9.0"
+        "net8.0"
       ]
     }
   ]
