@@ -74,12 +74,60 @@ class Program
   
                 // Bắt đầu vòng lặp hội thoại
                 int conversationCount = 0;
-                const int MAX_CONVERSATIONS = 20;
+                const int MAX_CONVERSATIONS = 3;
   
                 while (conversationCount < MAX_CONVERSATIONS)
                 {
                     conversationCount++;
                     Console.WriteLine($"\n🔄 Lượt hội thoại thứ {conversationCount}/{MAX_CONVERSATIONS}");
+  
+                    // Kiểm tra textarea của ChatGPT trước
+                    Console.WriteLine("🔍 Kiểm tra textarea của ChatGPT...");
+                    Console.WriteLine("🔍 Tìm với XPath: //p[@data-placeholder='Ask anything']");
+                    IWebElement? chatGptInput = null;
+                    try
+                    {
+                        chatGptInput = chatGptDriver.FindElement(By.XPath("//p[@data-placeholder='Ask anything']"));
+                        Console.WriteLine("✅ Đã tìm thấy textarea của ChatGPT!");
+                        // Hiển thị thông tin về textarea để debug
+                        Console.WriteLine($"📝 Class của textarea: {chatGptInput.GetAttribute("class")}");
+                        Console.WriteLine($"📝 Placeholder: {chatGptInput.GetAttribute("data-placeholder")}");
+                        Console.WriteLine($"📝 Tag name: {chatGptInput.TagName}");
+                        Console.WriteLine($"📝 Text hiện tại: {chatGptInput.Text}");
+                        Console.WriteLine($"📝 Có hiển thị không: {chatGptInput.Displayed}");
+                        Console.WriteLine($"📝 Có enable không: {chatGptInput.Enabled}");
+                    }
+                    catch (NoSuchElementException)
+                    {
+                        Console.WriteLine("❌ Không tìm thấy textarea của ChatGPT!");
+                        Console.WriteLine("⚠️ Thử tìm với XPath khác...");
+                        try
+                        {
+                            // Thử đợi một chút và tìm lại
+                            Thread.Sleep(2000);
+                            Console.WriteLine("🔄 Thử tìm lại sau khi đợi...");
+                            chatGptInput = chatGptDriver.FindElement(By.XPath("//p[@data-placeholder='Ask anything']"));
+                            Console.WriteLine("✅ Đã tìm thấy sau khi đợi!");
+                        }
+                        catch (NoSuchElementException)
+                        {
+                            Console.WriteLine("❌ Vẫn không tìm thấy phần tử nhập văn bản!");
+                            Console.WriteLine("⚠️ Hiển thị source HTML để debug:");
+                            try
+                            {
+                                var composerBackground = chatGptDriver.FindElement(By.Id("composer-background"));
+                                Console.WriteLine("📝 HTML của composer-background:");
+                                Console.WriteLine(composerBackground.GetAttribute("innerHTML"));
+                            }
+                            catch
+                            {
+                                Console.WriteLine("❌ Không tìm thấy cả composer-background!");
+                            }
+                        }
+                        Console.WriteLine("⏸️ Chương trình tạm dừng. Nhấn Enter để thử lại hoặc Ctrl+C để thoát...");
+                        Console.ReadLine();
+                        continue;
+                    }
   
                     try
                     {
@@ -89,25 +137,125 @@ class Program
   
                         if (lastResponse != null)
                         {
+                            // Hiển thị thông tin về phần tử chứa câu trả lời
+                            Console.WriteLine("\n🔍 Thông tin về phần tử chứa câu trả lời:");
+                            Console.WriteLine($"📝 Class: {lastResponse.GetAttribute("class")}");
+                            Console.WriteLine($"📝 Role: {lastResponse.GetAttribute("role")}");
+                            
                             Console.WriteLine("\n🤖 ChatGPT trả lời:");
                             Console.WriteLine("------------------------------------------");
                             Console.WriteLine(lastResponse.Text);
                             Console.WriteLine("------------------------------------------\n");
+                            Console.WriteLine($"📏 Độ dài câu trả lời: {lastResponse.Text.Length} ký tự");
+                            
+                            // Lưu nội dung để kiểm tra
+                            string copiedText = lastResponse.Text;
+                            if (string.IsNullOrEmpty(copiedText))
+                            {
+                                Console.WriteLine("⚠️ Cảnh báo: Nội dung copy được là rỗng!");
+                                
+                                // Thử lấy nội dung bằng JavaScript
+                                Console.WriteLine("🔄 Thử lấy nội dung bằng JavaScript...");
+                                IJavaScriptExecutor js = (IJavaScriptExecutor)chatGptDriver;
+                                copiedText = (string)js.ExecuteScript("return arguments[0].textContent;", lastResponse);
+                                
+                                if (string.IsNullOrEmpty(copiedText))
+                                {
+                                    Console.WriteLine("❌ Vẫn không lấy được nội dung!");
+                                    Console.WriteLine("⏸️ Chương trình tạm dừng. Nhấn Enter để thử lại hoặc Ctrl+C để thoát...");
+                                    Console.ReadLine();
+                                    continue;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("✅ Đã lấy được nội dung bằng JavaScript!");
+                                    Console.WriteLine("\n📝 Nội dung lấy được:");
+                                    Console.WriteLine("------------------------------------------");
+                                    Console.WriteLine(copiedText);
+                                    Console.WriteLine("------------------------------------------\n");
+                                }
+                            }
   
                             // Chuyển sang cửa sổ Kite và gửi tin nhắn
                             Console.WriteLine("🌐 Đang gửi câu trả lời sang Kite...");
+                            Console.WriteLine("🔍 Kiểm tra input của Gokite...");
                             try
                             {
-                                // Tìm ô input trên Kite
-                                var kiteWait = new WebDriverWait(kiteDriver, TimeSpan.FromSeconds(10));
-                                var kiteInput = kiteWait.Until(driver => 
-                                    driver.FindElement(By.XPath("/html/body/div/div[2]/main/div/div[2]/div[3]/form/input")));
-                                
+                                // Thử tìm input trực tiếp trước
+                                IWebElement? kiteInput = null;
+                                // Mảng các XPath có thể của input
+                                string[] possibleXPaths = new string[] {
+                                    "/html/body/div/div[2]/main/div/div[2]/div[3]/form/input",  // XPath ban đầu
+                                    "/html/body/div/div[2]/main/div/div[2]/div[2]/form/input"   // XPath sau vòng lặp đầu
+                                };
+
+                                Console.WriteLine("🔍 Thử tìm input với các XPath có thể:");
+                                try
+                                {
+                                    foreach (string xpath in possibleXPaths)
+                                    {
+                                        Console.WriteLine($"🔍 Thử XPath: {xpath}");
+                                        try
+                                        {
+                                            kiteInput = kiteDriver.FindElement(By.XPath(xpath));
+                                            Console.WriteLine($"✅ Đã tìm thấy input với XPath: {xpath}");
+                                            break;
+                                        }
+                                        catch (NoSuchElementException)
+                                        {
+                                            Console.WriteLine($"❌ Không tìm thấy với XPath: {xpath}");
+                                            continue;
+                                        }
+                                    }
+                                }
+                                catch (NoSuchElementException)
+                                {
+                                    Console.WriteLine("❌ Không tìm thấy input với tất cả các XPath");
+                                    Console.WriteLine("⌛ Đợi thêm 5 giây và thử lại...");
+                                    Thread.Sleep(5000);
+
+                                    try
+                                    {
+                                        // Thử lại với tất cả XPath sau khi đợi
+                                        foreach (string xpath in possibleXPaths)
+                                        {
+                                            Console.WriteLine($"🔍 Thử lại XPath: {xpath}");
+                                            try
+                                            {
+                                                kiteInput = kiteDriver.FindElement(By.XPath(xpath));
+                                                Console.WriteLine($"✅ Đã tìm thấy input với XPath: {xpath} sau khi đợi!");
+                                                break;
+                                            }
+                                            catch (NoSuchElementException)
+                                            {
+                                                Console.WriteLine($"❌ Vẫn không tìm thấy với XPath: {xpath}");
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    catch (NoSuchElementException)
+                                    {
+                                        Console.WriteLine("❌ Vẫn không tìm thấy input của Gokite!");
+                                        Console.WriteLine("🔍 Hiển thị HTML hiện tại của Gokite để debug:");
+                                        Console.WriteLine(kiteDriver.PageSource.Substring(0, 500) + "...");
+                                        Console.WriteLine("\n⏸️ Chương trình tạm dừng. Nhấn Enter để thử lại hoặc Ctrl+C để thoát...");
+                                        Console.ReadLine();
+                                        return;
+                                    }
+                                }
+                                 
+                                if (kiteInput == null)
+                                {
+                                    throw new Exception("Không tìm thấy input của Gokite sau khi thử nhiều lần");
+                                }
+
                                 // Clear ô input và nhập nội dung mới
+                                Console.WriteLine("📝 Xóa nội dung cũ và nhập text mới...");
                                 kiteInput.Clear();
-                                kiteInput.SendKeys(lastResponse.Text);
+                                kiteInput.SendKeys(copiedText);
                                 
                                 // Gửi tin nhắn bằng phím Enter
+                                Console.WriteLine("↩️ Gửi Enter...");
                                 kiteInput.SendKeys(Keys.Enter);
                                 
                                 Console.WriteLine("✅ Đã gửi tin nhắn đến Kite!");
@@ -124,8 +272,7 @@ class Program
                                     Console.WriteLine($"🔍 Tìm câu trả lời với XPath: {kiteResponseXPath}");
   
                                     // Lấy tất cả các phần tử text trong container
-                                    var kiteResponse = kiteWait.Until(driver => 
-                                        driver.FindElement(By.XPath(kiteResponseXPath)));
+                                    var kiteResponse = kiteDriver.FindElement(By.XPath(kiteResponseXPath));
   
                                     if (kiteResponse != null)
                                     {
@@ -154,38 +301,80 @@ class Program
   
                                         // Gửi câu trả lời của Kite sang ChatGPT
                                         Console.WriteLine("📤 Đang gửi câu trả lời sang ChatGPT...");
-                                        Console.WriteLine("🔍 Đang tìm ô nhập text của ChatGPT...");
-  
                                         try 
                                         {
-                                            // Tìm textarea bằng XPath
-                                            Console.WriteLine("🔍 Tìm textarea với XPath");
-                                            var inputBox = wait.Until(driver => 
-                                                driver.FindElement(By.XPath("//textarea[@id='prompt-textarea']")));
-  
-                                            if (inputBox == null)
+                                            // Tìm lại phần tử nhập văn bản
+                                            Console.WriteLine("🔍 Tìm lại phần tử nhập văn bản...");
+                                            var inputDiv = chatGptDriver.FindElement(By.XPath("//p[@data-placeholder='Ask anything']"));
+                                            
+                                            if (inputDiv != null)
                                             {
-                                                throw new NoSuchElementException("Không tìm thấy ô nhập text của ChatGPT");
+                                                Console.WriteLine("✅ Đã tìm thấy phần tử nhập văn bản!");
+                                                
+                                                // Focus và nhập text bằng JavaScript
+                                                Console.WriteLine("🔍 Focus vào phần tử...");
+                                                IJavaScriptExecutor js = (IJavaScriptExecutor)chatGptDriver;
+                                                js.ExecuteScript(@"
+                                                    arguments[0].focus();
+                                                    arguments[0].innerHTML = arguments[1];
+                                                ", inputDiv, responseText);
+                                                
+                                                Thread.Sleep(500); // Đợi một chút
+                                                
+                                                // Thử tìm và click nút gửi
+                                                Console.WriteLine("🔍 Tìm nút gửi...");
+                                                try
+                                                {
+                                                    var sendButton = chatGptDriver.FindElement(By.CssSelector("button[data-testid='send-button']"));
+                                                    if (sendButton != null && sendButton.Enabled)
+                                                    {
+                                                        Console.WriteLine("🖱️ Click nút gửi...");
+                                                        sendButton.Click();
+                                                        Console.WriteLine("✅ Đã click nút gửi!");
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine("⚠️ Nút gửi không khả dụng, thử cách khác...");
+                                                        // Thử kích hoạt sự kiện Enter bằng JavaScript
+                                                        js.ExecuteScript(@"
+                                                            const enterEvent = new KeyboardEvent('keydown', {
+                                                                bubbles: true,
+                                                                cancelable: true,
+                                                                key: 'Enter',
+                                                                code: 'Enter',
+                                                                keyCode: 13,
+                                                                which: 13,
+                                                                shiftKey: false,
+                                                                ctrlKey: false,
+                                                                metaKey: false
+                                                            });
+                                                            arguments[0].dispatchEvent(enterEvent);
+                                                        ", inputDiv);
+                                                    }
+                                                }
+                                                catch (NoSuchElementException)
+                                                {
+                                                    Console.WriteLine("⚠️ Không tìm thấy nút gửi, thử dùng phím Enter...");
+                                                    // Thử gửi Enter trực tiếp
+                                                    inputDiv.SendKeys(Keys.Enter);
+                                                }
+                                                
+                                                Console.WriteLine("✅ Đã gửi tin nhắn thành công!");
                                             }
-  
-                                            Console.WriteLine("✅ Đã tìm thấy textarea!");
-  
-                                            // Nhập text trực tiếp
-                                            Console.WriteLine("📝 Nhập text...");
-                                            inputBox.Clear();
-                                            inputBox.SendKeys(responseText + Keys.Enter);
-  
-                                            Console.WriteLine("✅ Đã gửi tin nhắn!");
-  
-                                            Thread.Sleep(8000); // Tăng thời gian đợi ChatGPT xử lý
+                                            else
+                                            {
+                                                throw new Exception("Không tìm thấy phần tử nhập văn bản");
+                                            }
                                         }
                                         catch (Exception ex)
                                         {
-                                            Console.WriteLine($"❌ Lỗi khi gửi tin nhắn đến ChatGPT:");
-                                            Console.WriteLine($"⚠️ Chi tiết lỗi: {ex.Message}");
-                                            Console.WriteLine($"⚠️ Loại lỗi: {ex.GetType().Name}");
-                                            break;
+                                            Console.WriteLine($"❌ Lỗi khi gửi tin nhắn đến ChatGPT: {ex.Message}");
+                                            Console.WriteLine("⏸️ Chương trình tạm dừng. Nhấn Enter để thử lại hoặc Ctrl+C để thoát...");
+                                            Console.ReadLine();
+                                            continue;
                                         }
+  
+                                        Thread.Sleep(8000); // Đợi ChatGPT xử lý
                                     }
                                     else
                                     {
@@ -263,13 +452,54 @@ class Program
                 Thread.Sleep(1000);
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Lỗi: {ex.Message}");
-        }
         finally
         {
-            CleanupAndExit();
+            Console.WriteLine("🔄 Đang dọn dẹp và đóng các trình duyệt...");
+            try 
+            {
+                if (chatGptDriver != null)
+                {
+                    chatGptDriver.Quit();
+                    Console.WriteLine("✅ Đã đóng trình duyệt ChatGPT");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Lỗi khi đóng trình duyệt ChatGPT: {ex.Message}");
+            }
+
+            try 
+            {
+                if (kiteDriver != null)
+                {
+                    kiteDriver.Quit();
+                    Console.WriteLine("✅ Đã đóng trình duyệt Kite");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Lỗi khi đóng trình duyệt Kite: {ex.Message}");
+            }
+
+            // Để chắc chắn, kill tất cả các process Chrome còn sót lại
+            try 
+            {
+                foreach (var process in Process.GetProcessesByName("chrome"))
+                {
+                    process.Kill();
+                }
+                foreach (var process in Process.GetProcessesByName("chromedriver"))
+                {
+                    process.Kill();
+                }
+                Console.WriteLine("✅ Đã dọn dẹp tất cả các process Chrome còn sót");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Lỗi khi kill process Chrome: {ex.Message}");
+            }
+
+            Console.WriteLine("👋 Chương trình đã kết thúc");
         }
     }
 
