@@ -1,9 +1,10 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Diagnostics;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Diagnostics;
-using System.Threading;
 using System.Linq;
 using OpenQA.Selenium.Interactions;
 using System.Text.Json;

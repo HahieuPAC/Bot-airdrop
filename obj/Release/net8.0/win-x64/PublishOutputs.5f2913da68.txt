@@ -1,5 +1,0 @@
-D:\VS code\C#\Bot-airdrop\bin\Release\net8.0\win-x64\publish\Bot airdrop.pdb
-D:\VS code\C#\Bot-airdrop\bin\Release\net8.0\win-x64\publish\selenium-manager\linux\selenium-manager
-D:\VS code\C#\Bot-airdrop\bin\Release\net8.0\win-x64\publish\selenium-manager\macos\selenium-manager
-D:\VS code\C#\Bot-airdrop\bin\Release\net8.0\win-x64\publish\selenium-manager\windows\selenium-manager.exe
-D:\VS code\C#\Bot-airdrop\bin\Release\net8.0\win-x64\publish\Bot airdrop.exe
