@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "dgSpecHash": "1tfsQ8ogdzE=",
+  "success": true,
+  "projectFilePath": "D:\\VS code\\C#\\Bot airdrop\\Bot airdrop.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Hieu\\.nuget\\packages\\microsoft.edge.seleniumtools\\3.141.3\\microsoft.edge.seleniumtools.3.141.3.nupkg.sha512",
+    "C:\\Users\\Hieu\\.nuget\\packages\\selenium.support\\4.29.0\\selenium.support.4.29.0.nupkg.sha512",
+    "C:\\Users\\Hieu\\.nuget\\packages\\selenium.webdriver\\4.29.0\\selenium.webdriver.4.29.0.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1608",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Detected package version outside of dependency constraint: Microsoft.Edge.SeleniumTools 3.141.3 requires Selenium.WebDriver (= 3.141.0) but version Selenium.WebDriver 4.29.0 was resolved.",
+      "libraryId": "Selenium.WebDriver",
+      "targetGraphs": [
+        "net9.0"
+      ]
+    }
+  ]
+}
