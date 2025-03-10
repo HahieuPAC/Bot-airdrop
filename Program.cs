@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 using OpenQA.Selenium.Interactions;
+using System.Text.Json;
 
 class Program
 {
@@ -784,6 +785,126 @@ class Program
         {
             Console.WriteLine($"❌ Lỗi khi mở {profileName}: {ex.Message}");
             return null;
+        }
+    }
+
+    static void InitializeEdgeProfiles()
+    {
+        try
+        {
+            Console.WriteLine("[INFO] Checking Edge profiles...");
+
+            // Kiểm tra và tạo thư mục profile cho Kite
+            if (!Directory.Exists(BASE_EDGE_USER_DATA_DIR))
+            {
+                Console.WriteLine("[INFO] Creating base Edge profile directory...");
+                Directory.CreateDirectory(BASE_EDGE_USER_DATA_DIR);
+                
+                // Copy các file cấu hình cơ bản từ profile mặc định nếu có
+                string defaultProfilePath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Microsoft", "Edge", "User Data"
+                );
+
+                if (Directory.Exists(defaultProfilePath))
+                {
+                    Console.WriteLine("[INFO] Copying default profile settings...");
+                    CopyProfileFiles(defaultProfilePath, BASE_EDGE_USER_DATA_DIR);
+                }
+            }
+
+            // Kiểm tra và tạo Profile 1 cho Kite
+            string kiteProfilePath = Path.Combine(BASE_EDGE_USER_DATA_DIR, "Profile 1");
+            if (!Directory.Exists(kiteProfilePath))
+            {
+                Console.WriteLine("[INFO] Creating Kite profile directory...");
+                Directory.CreateDirectory(kiteProfilePath);
+                
+                // Tạo file Preferences cơ bản cho Profile 1
+                CreateDefaultPreferences(kiteProfilePath, "Kite Profile");
+            }
+
+            // Kiểm tra và tạo profile cho ChatGPT
+            if (!Directory.Exists(CHATGPT_USER_DATA_DIR))
+            {
+                Console.WriteLine("[INFO] Creating ChatGPT profile directory...");
+                Directory.CreateDirectory(CHATGPT_USER_DATA_DIR);
+                
+                // Tạo file Preferences cơ bản cho ChatGPT
+                CreateDefaultPreferences(Path.Combine(CHATGPT_USER_DATA_DIR, "Default"), "ChatGPT Profile");
+            }
+
+            Console.WriteLine("[SUCCESS] Edge profiles initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to initialize profiles: {ex.Message}");
+            throw;
+        }
+    }
+
+    static void CopyProfileFiles(string sourcePath, string targetPath)
+    {
+        try
+        {
+            // Danh sách các file cấu hình cần copy
+            string[] configFiles = {
+                "Local State",
+                "Preferences",
+                "Secure Preferences"
+            };
+
+            foreach (string file in configFiles)
+            {
+                string sourceFile = Path.Combine(sourcePath, file);
+                string targetFile = Path.Combine(targetPath, file);
+
+                if (File.Exists(sourceFile) && !File.Exists(targetFile))
+                {
+                    File.Copy(sourceFile, targetFile);
+                    Console.WriteLine($"[INFO] Copied {file}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WARN] Error copying profile files: {ex.Message}");
+        }
+    }
+
+    static void CreateDefaultPreferences(string profilePath, string profileName)
+    {
+        try
+        {
+            Directory.CreateDirectory(profilePath);
+
+            // Tạo file Preferences với cấu hình cơ bản
+            var preferences = new
+            {
+                profile = new
+                {
+                    name = profileName,
+                    exit_type = "Normal",
+                    exited_cleanly = true
+                },
+                browser = new
+                {
+                    enabled_labs_experiments = new string[] { },
+                    has_seen_welcome_page = true
+                },
+                extensions = new
+                {
+                    settings = new { }
+                }
+            };
+
+            string preferencesPath = Path.Combine(profilePath, "Preferences");
+            File.WriteAllText(preferencesPath, JsonSerializer.Serialize(preferences));
+            Console.WriteLine($"[INFO] Created Preferences for {profileName}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WARN] Error creating preferences: {ex.Message}");
         }
     }
 }
