@@ -17,13 +17,10 @@ class Program
     static readonly string METAMASK_PASSWORD = "H@trunghj3up@c112358";
     
     // Thêm hằng số cho đường dẫn profile
-    static readonly string BASE_EDGE_USER_DATA_DIR = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        @"Microsoft\Edge\User Data"
-    );
+    static readonly string BASE_EDGE_USER_DATA_DIR = GetEdgeUserDataDir();
     static readonly string CHATGPT_USER_DATA_DIR = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        @"Microsoft\Edge\User Data ChatGPT"
+        Path.GetDirectoryName(GetEdgeUserDataDir()) ?? "",
+        "User Data ChatGPT"
     );
 
     static void Main()
@@ -512,22 +509,40 @@ class Program
     static EdgeOptions ConfigureEdgeOptions(bool isKite = true)
     {
         var options = new EdgeOptions();
-        
-        if (isKite)
+        try
         {
-            // Kite sử dụng thư mục User Data gốc
-            options.AddArgument($"--user-data-dir={BASE_EDGE_USER_DATA_DIR}");
-            options.AddArgument("--profile-directory=Profile 1");
+            if (isKite)
+            {
+                // Kiểm tra và tạo thư mục nếu cần
+                if (!Directory.Exists(BASE_EDGE_USER_DATA_DIR))
+                {
+                    Console.WriteLine("[WARN] Edge profile directory not found, creating...");
+                    Directory.CreateDirectory(BASE_EDGE_USER_DATA_DIR);
+                }
+                options.AddArgument($"--user-data-dir={BASE_EDGE_USER_DATA_DIR}");
+                options.AddArgument("--profile-directory=Profile 1");
+                Console.WriteLine($"[INFO] Using Kite profile: {BASE_EDGE_USER_DATA_DIR}");
+            }
+            else
+            {
+                // Kiểm tra và tạo thư mục ChatGPT nếu cần
+                if (!Directory.Exists(CHATGPT_USER_DATA_DIR))
+                {
+                    Console.WriteLine("[WARN] ChatGPT profile directory not found, creating...");
+                    Directory.CreateDirectory(CHATGPT_USER_DATA_DIR);
+                }
+                options.AddArgument($"--user-data-dir={CHATGPT_USER_DATA_DIR}");
+                options.AddArgument("--profile-directory=Default");
+                Console.WriteLine($"[INFO] Using ChatGPT profile: {CHATGPT_USER_DATA_DIR}");
+            }
         }
-        else
+        catch (Exception ex)
         {
-            // Đảm bảo thư mục ChatGPT tồn tại
-            EnsureChatGPTProfile();
-            
-            options.AddArgument($"--user-data-dir={CHATGPT_USER_DATA_DIR}");
-            options.AddArgument("--profile-directory=Default");
+            Console.WriteLine($"[ERROR] Failed to configure Edge options: {ex.Message}");
+            throw;
         }
-        
+
+        // Các options khác giữ nguyên
         options.AddArgument("--enable-extensions");
         options.AddArgument("--disable-blink-features=AutomationControlled");
         options.AddArgument("--disable-logging");
@@ -535,38 +550,56 @@ class Program
         options.AddArgument("--silent");
         options.AddExcludedArgument("enable-automation");
         options.AddAdditionalOption("useAutomationExtension", false);
+        
         return options;
     }
 
-    // Thêm phương thức để đảm bảo profile ChatGPT
-    static void EnsureChatGPTProfile()
+    // Thêm phương thức để lấy đường dẫn Edge profile theo từng hệ điều hành
+    static string GetEdgeUserDataDir()
     {
         try
         {
-            // Tạo thư mục nếu chưa tồn tại
-            if (!Directory.Exists(CHATGPT_USER_DATA_DIR))
+            // Lấy username hiện tại
+            string username = Environment.UserName;
+            Console.WriteLine($"[INFO] Current username: {username}");
+
+            // Xác định hệ điều hành
+            if (OperatingSystem.IsWindows())
             {
-                Console.WriteLine("📁 Đang tạo profile mới cho ChatGPT...");
-                Directory.CreateDirectory(CHATGPT_USER_DATA_DIR);
-
-                // Copy các file cần thiết từ profile gốc (preferences, extensions, etc.)
-                var defaultFiles = new[] { "Preferences", "Secure Preferences", "Local State" };
-                foreach (var file in defaultFiles)
-                {
-                    var sourcePath = Path.Combine(BASE_EDGE_USER_DATA_DIR, file);
-                    var destPath = Path.Combine(CHATGPT_USER_DATA_DIR, file);
-                    if (File.Exists(sourcePath) && !File.Exists(destPath))
-                    {
-                        File.Copy(sourcePath, destPath);
-                    }
-                }
-
-                Console.WriteLine("✅ Đã tạo profile ChatGPT thành công");
+                string path = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "Microsoft", "Edge", "User Data"
+                );
+                Console.WriteLine($"[INFO] Windows Edge profile path: {path}");
+                return path;
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                string path = Path.Combine(
+                    "/Users", username,
+                    "Library", "Application Support", "Microsoft Edge", "User Data"
+                );
+                Console.WriteLine($"[INFO] MacOS Edge profile path: {path}");
+                return path;
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                string path = Path.Combine(
+                    "/home", username,
+                    ".config", "microsoft-edge", "User Data"
+                );
+                Console.WriteLine($"[INFO] Linux Edge profile path: {path}");
+                return path;
+            }
+            else
+            {
+                throw new PlatformNotSupportedException("Unsupported operating system");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️ Lỗi khi tạo profile ChatGPT: {ex.Message}");
+            Console.WriteLine($"[ERROR] Failed to get Edge profile path: {ex.Message}");
+            throw;
         }
     }
 
