@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net8.0": {
+    "net9.0": {
       "Microsoft.Edge.SeleniumTools/3.141.3": {
         "type": "package",
         "dependencies": {
@@ -12,64 +12,6 @@
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.Edge.SeleniumTools.dll": {}
-        }
-      },
-      "Microsoft.NET.ILLink.Tasks/8.0.13": {
-        "type": "package",
-        "build": {
-          "build/Microsoft.NET.ILLink.Tasks.props": {}
-        }
-      },
-      "Selenium.Support/4.29.0": {
-        "type": "package",
-        "dependencies": {
-          "Selenium.WebDriver": "4.29.0"
-        },
-        "compile": {
-          "lib/netstandard2.0/WebDriver.Support.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/netstandard2.0/WebDriver.Support.dll": {
-            "related": ".xml"
-          }
-        }
-      },
-      "Selenium.WebDriver/4.29.0": {
-        "type": "package",
-        "compile": {
-          "lib/net8.0/WebDriver.dll": {
-            "related": ".xml"
-          }
-        },
-        "runtime": {
-          "lib/net8.0/WebDriver.dll": {
-            "related": ".xml"
-          }
-        },
-        "build": {
-          "buildTransitive/Selenium.WebDriver.targets": {}
-        }
-      }
-    },
-    "net8.0/win-x64": {
-      "Microsoft.Edge.SeleniumTools/3.141.3": {
-        "type": "package",
-        "dependencies": {
-          "Selenium.WebDriver": "[3.141.0]"
-        },
-        "compile": {
-          "lib/netstandard2.0/Microsoft.Edge.SeleniumTools.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/Microsoft.Edge.SeleniumTools.dll": {}
-        }
-      },
-      "Microsoft.NET.ILLink.Tasks/8.0.13": {
-        "type": "package",
-        "build": {
-          "build/Microsoft.NET.ILLink.Tasks.props": {}
         }
       },
       "Selenium.Support/4.29.0": {
@@ -122,57 +64,6 @@
         "microsoft.edge.seleniumtools.nuspec"
       ]
     },
-    "Microsoft.NET.ILLink.Tasks/8.0.13": {
-      "sha512": "R19ZTaRiQAK+xo9ZwaHbF/1vb1wwR1Wn5+sqp9v8+CDjbdS8R6qftKdw0VSXWKm7VAMi7P+NCU4zxDzhEWcAwQ==",
-      "type": "package",
-      "path": "microsoft.net.illink.tasks/8.0.13",
-      "hasTools": true,
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "Icon.png",
-        "LICENSE.TXT",
-        "Sdk/Sdk.props",
-        "THIRD-PARTY-NOTICES.TXT",
-        "analyzers/dotnet/cs/ILLink.CodeFixProvider.dll",
-        "analyzers/dotnet/cs/ILLink.RoslynAnalyzer.dll",
-        "build/Microsoft.NET.ILLink.Analyzers.props",
-        "build/Microsoft.NET.ILLink.Tasks.props",
-        "build/Microsoft.NET.ILLink.targets",
-        "microsoft.net.illink.tasks.8.0.13.nupkg.sha512",
-        "microsoft.net.illink.tasks.nuspec",
-        "tools/net472/ILLink.Tasks.dll",
-        "tools/net472/ILLink.Tasks.dll.config",
-        "tools/net472/Mono.Cecil.Mdb.dll",
-        "tools/net472/Mono.Cecil.Pdb.dll",
-        "tools/net472/Mono.Cecil.Rocks.dll",
-        "tools/net472/Mono.Cecil.dll",
-        "tools/net472/Sdk/Sdk.props",
-        "tools/net472/System.Buffers.dll",
-        "tools/net472/System.Collections.Immutable.dll",
-        "tools/net472/System.Memory.dll",
-        "tools/net472/System.Numerics.Vectors.dll",
-        "tools/net472/System.Reflection.Metadata.dll",
-        "tools/net472/System.Runtime.CompilerServices.Unsafe.dll",
-        "tools/net472/build/Microsoft.NET.ILLink.Analyzers.props",
-        "tools/net472/build/Microsoft.NET.ILLink.Tasks.props",
-        "tools/net472/build/Microsoft.NET.ILLink.targets",
-        "tools/net8.0/ILLink.Tasks.deps.json",
-        "tools/net8.0/ILLink.Tasks.dll",
-        "tools/net8.0/Mono.Cecil.Mdb.dll",
-        "tools/net8.0/Mono.Cecil.Pdb.dll",
-        "tools/net8.0/Mono.Cecil.Rocks.dll",
-        "tools/net8.0/Mono.Cecil.dll",
-        "tools/net8.0/Sdk/Sdk.props",
-        "tools/net8.0/build/Microsoft.NET.ILLink.Analyzers.props",
-        "tools/net8.0/build/Microsoft.NET.ILLink.Tasks.props",
-        "tools/net8.0/build/Microsoft.NET.ILLink.targets",
-        "tools/net8.0/illink.deps.json",
-        "tools/net8.0/illink.dll",
-        "tools/net8.0/illink.runtimeconfig.json",
-        "useSharedDesignerContext.txt"
-      ]
-    },
     "Selenium.Support/4.29.0": {
       "sha512": "Edeldo2R/H4mfh1CW1YNr8g8ASnF/5d9YlvBKtAW93dMImnzaQ47eHbMjoJp4kU4CeyQ22UA300d7VFutzddmw==",
       "type": "package",
@@ -211,15 +102,14 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net8.0": [
+    "net9.0": [
       "Microsoft.Edge.SeleniumTools >= 3.141.3",
-      "Microsoft.NET.ILLink.Tasks >= 8.0.13",
       "Selenium.Support >= 4.29.0",
       "Selenium.WebDriver >= 4.29.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\lovev\\.nuget\\packages\\": {}
+    "C:\\Users\\Hieu\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
@@ -227,21 +117,21 @@
       "projectUniqueName": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
       "projectName": "Bot airdrop",
       "projectPath": "D:\\VS code\\C#\\Bot-airdrop\\Bot airdrop.csproj",
-      "packagesPath": "C:\\Users\\lovev\\.nuget\\packages\\",
+      "packagesPath": "C:\\Users\\Hieu\\.nuget\\packages\\",
       "outputPath": "D:\\VS code\\C#\\Bot-airdrop\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\lovev\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Hieu\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "net8.0"
+        "net9.0"
       ],
       "sources": {
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
+        "net9.0": {
+          "targetAlias": "net9.0",
           "projectReferences": {}
         }
       },
@@ -254,21 +144,16 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      }
+      },
+      "SdkAnalysisLevel": "9.0.200"
     },
     "frameworks": {
-      "net8.0": {
-        "targetAlias": "net8.0",
+      "net9.0": {
+        "targetAlias": "net9.0",
         "dependencies": {
           "Microsoft.Edge.SeleniumTools": {
             "target": "Package",
             "version": "[3.141.3, )"
-          },
-          "Microsoft.NET.ILLink.Tasks": {
-            "suppressParent": "All",
-            "target": "Package",
-            "version": "[8.0.13, )",
-            "autoReferenced": true
           },
           "Selenium.Support": {
             "target": "Package",
@@ -290,31 +175,12 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
-        "downloadDependencies": [
-          {
-            "name": "Microsoft.AspNetCore.App.Runtime.win-x64",
-            "version": "[8.0.13, 8.0.13]"
-          },
-          {
-            "name": "Microsoft.NETCore.App.Runtime.win-x64",
-            "version": "[8.0.13, 8.0.13]"
-          },
-          {
-            "name": "Microsoft.WindowsDesktop.App.Runtime.win-x64",
-            "version": "[8.0.13, 8.0.13]"
-          }
-        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.406/PortableRuntimeIdentifierGraph.json"
-      }
-    },
-    "runtimes": {
-      "win-x64": {
-        "#import": []
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.200/PortableRuntimeIdentifierGraph.json"
       }
     }
   },
@@ -326,8 +192,7 @@
       "message": "Detected package version outside of dependency constraint: Microsoft.Edge.SeleniumTools 3.141.3 requires Selenium.WebDriver (= 3.141.0) but version Selenium.WebDriver 4.29.0 was resolved.",
       "libraryId": "Selenium.WebDriver",
       "targetGraphs": [
-        "net8.0",
-        "net8.0/win-x64"
+        "net9.0"
       ]
     }
   ]

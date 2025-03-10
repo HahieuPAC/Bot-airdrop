@@ -20,8 +20,13 @@ class Program
     // Thêm hằng số cho đường dẫn profile
     static readonly string BASE_EDGE_USER_DATA_DIR = GetEdgeUserDataDir();
     static readonly string CHATGPT_USER_DATA_DIR = Path.Combine(
-        Path.GetDirectoryName(GetEdgeUserDataDir()) ?? "",
-        "User Data ChatGPT"
+        Path.GetDirectoryName(BASE_EDGE_USER_DATA_DIR) ?? "",
+        "Edge",
+        "User Data",
+        "ChatGPT"
+    ).Replace(
+        Path.Combine("Edge", "Edge"),
+        "Edge"
     );
 
     static void Main()
@@ -64,13 +69,64 @@ class Program
                 chatGptDriver.Navigate().GoToUrl(CHATGPT_URL);
                 Console.WriteLine("✅ Đã mở ChatGPT thành công!");
   
-                Console.WriteLine("⌛ Đợi ChatGPT khởi động...");
-                Thread.Sleep(5000); // Đợi 5 giây cho ChatGPT khởi động hoàn toàn
+                Console.WriteLine("⌛ Đợi ChatGPT khởi động và tìm ô nhập văn bản...");
+                var chatGptWait = new WebDriverWait(chatGptDriver, TimeSpan.FromMinutes(2));
   
-                // Tạo WebDriverWait để đợi các phần tử
-                var wait = new WebDriverWait(chatGptDriver, TimeSpan.FromSeconds(10));
+                // Gửi câu hỏi đầu tiên cho ChatGPT và đợi câu trả lời
+                try 
+                {
+                    // Tìm và gửi câu hỏi đầu tiên
+                    var inputDiv = chatGptWait.Until(d => d.FindElement(By.XPath("//p[@data-placeholder='Ask anything']")));
+                    if (inputDiv != null)
+                    {
+                        Console.WriteLine("✅ Đã tìm thấy ô nhập văn bản!");
+                        
+                        string firstMessage = "ask questions about the gokiteAI project, concise and only one line";
+                        
+                        // Focus và nhập text bằng JavaScript
+                        IJavaScriptExecutor js = (IJavaScriptExecutor)chatGptDriver;
+                        js.ExecuteScript(@"
+                            arguments[0].focus();
+                            arguments[0].innerHTML = arguments[1];
+                        ", inputDiv, firstMessage);
+                        
+                        Thread.Sleep(500);
+                        
+                        // Gửi câu hỏi
+                        var sendButton = chatGptWait.Until(d => d.FindElement(By.CssSelector("button[data-testid='send-button']")));
+                        if (sendButton != null && sendButton.Enabled)
+                        {
+                            sendButton.Click();
+                            Console.WriteLine("✅ Đã gửi câu hỏi đầu tiên cho ChatGPT!");
+                            
+                            // Đợi câu trả lời đầu tiên
+                            Console.WriteLine("⌛ Đang đợi câu trả lời đầu tiên từ ChatGPT...");
+                            var firstResponse = chatGptWait.Until(d => 
+                                d.FindElement(By.XPath("(//div[contains(@class, \"markdown\")])[last()]")));
+
+                            if (firstResponse != null)
+                            {
+                                Console.WriteLine("✅ Đã nhận được câu trả lời đầu tiên từ ChatGPT!");
+                                Console.WriteLine("\n🤖 ChatGPT trả lời:");
+                                Console.WriteLine("------------------------------------------");
+                                Console.WriteLine(firstResponse.Text);
+                                Console.WriteLine("------------------------------------------\n");
+                                
+                                // Đợi 2 giây trước khi bắt đầu vòng lặp chính
+                                Thread.Sleep(2000);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ Lỗi khi xử lý câu hỏi đầu tiên: {ex.Message}");
+                    Console.WriteLine("⏸️ Chương trình tạm dừng. Nhấn Enter để tiếp tục hoặc Ctrl+C để thoát...");
+                    Console.ReadLine();
+                }
   
-                // Bắt đầu vòng lặp hội thoại
+                // Bắt đầu vòng lặp chính để xử lý hội thoại
+                Console.WriteLine("\n🔄 Bắt đầu vòng lặp xử lý hội thoại...");
                 int conversationCount = 0;
                 const int MAX_CONVERSATIONS = 21;
   
@@ -130,7 +186,7 @@ class Program
                     try
                     {
                         // Đợi và lấy câu trả lời từ ChatGPT
-                        var lastResponse = wait.Until(driver => 
+                        var lastResponse = chatGptWait.Until(driver => 
                             driver.FindElement(By.XPath("(//div[contains(@class, \"markdown\")])[last()]")));
   
                         if (lastResponse != null)
@@ -514,7 +570,6 @@ class Program
         {
             if (isKite)
             {
-                // Kiểm tra và tạo thư mục nếu cần
                 if (!Directory.Exists(BASE_EDGE_USER_DATA_DIR))
                 {
                     Console.WriteLine("[WARN] Edge profile directory not found, creating...");
@@ -526,15 +581,20 @@ class Program
             }
             else
             {
-                // Kiểm tra và tạo thư mục ChatGPT nếu cần
+                // Đảm bảo đường dẫn ChatGPT profile tồn tại
                 if (!Directory.Exists(CHATGPT_USER_DATA_DIR))
                 {
-                    Console.WriteLine("[WARN] ChatGPT profile directory not found, creating...");
+                    Console.WriteLine($"[INFO] Creating ChatGPT profile at: {CHATGPT_USER_DATA_DIR}");
                     Directory.CreateDirectory(CHATGPT_USER_DATA_DIR);
+                    InitializeChatGPTProfile();
+                }
+                else
+                {
+                    Console.WriteLine($"[INFO] Using existing ChatGPT profile: {CHATGPT_USER_DATA_DIR}");
                 }
                 options.AddArgument($"--user-data-dir={CHATGPT_USER_DATA_DIR}");
                 options.AddArgument("--profile-directory=Default");
-                Console.WriteLine($"[INFO] Using ChatGPT profile: {CHATGPT_USER_DATA_DIR}");
+                Console.WriteLine($"[DEBUG] ChatGPT profile path: {CHATGPT_USER_DATA_DIR}");
             }
         }
         catch (Exception ex)
@@ -555,27 +615,42 @@ class Program
         return options;
     }
 
+    // Tách riêng phần khởi tạo profile ChatGPT mới
+    static void InitializeChatGPTProfile()
+    {
+        try
+        {
+            Directory.CreateDirectory(CHATGPT_USER_DATA_DIR);
+            var defaultProfilePath = Path.Combine(CHATGPT_USER_DATA_DIR, "Default");
+            Directory.CreateDirectory(defaultProfilePath);
+
+            // Copy các file cấu hình từ profile gốc chỉ khi tạo mới
+            CopyProfileFiles(Path.Combine(BASE_EDGE_USER_DATA_DIR, "Default"), defaultProfilePath);
+            
+            Console.WriteLine("[SUCCESS] Created new ChatGPT profile successfully");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] Failed to initialize ChatGPT profile: {ex.Message}");
+            throw;
+        }
+    }
+
     // Thêm phương thức để lấy đường dẫn Edge profile theo từng hệ điều hành
     static string GetEdgeUserDataDir()
     {
         try
         {
-            // Lấy username hiện tại
-            string username = Environment.UserName;
-            Console.WriteLine($"[INFO] Current username: {username}");
-
-            // Xác định hệ điều hành
             if (OperatingSystem.IsWindows())
             {
-                string path = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                    "Microsoft", "Edge", "User Data"
-                );
+                string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                string path = Path.Combine(localAppData, "Microsoft", "Edge", "User Data");
                 Console.WriteLine($"[INFO] Windows Edge profile path: {path}");
                 return path;
             }
             else if (OperatingSystem.IsMacOS())
             {
+                string username = Environment.UserName;
                 string path = Path.Combine(
                     "/Users", username,
                     "Library", "Application Support", "Microsoft Edge", "User Data"
@@ -585,6 +660,7 @@ class Program
             }
             else if (OperatingSystem.IsLinux())
             {
+                string username = Environment.UserName;
                 string path = Path.Combine(
                     "/home", username,
                     ".config", "microsoft-edge", "User Data"
